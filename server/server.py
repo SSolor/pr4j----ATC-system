@@ -1,1 +1,2 @@
-# okay guys I haven't done python in years so you better be sure about this
+# server: basically the air traffic control tower
+#
