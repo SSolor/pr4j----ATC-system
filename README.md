@@ -20,14 +20,14 @@ We employ an Agile-SCRUM methodology with two-week sprints.
 -
 ## 🚦Server State Machine
 The Flight Tower operates through the following transitions
-:IDLE: Waiting for Pilot authentication.
-:PREFLIGHT: Validated pilot; preparing for taxi/takeoff.
-:ACTIVE: Monitoring live telemetry and traffic.
-:DATA_TRANSFER: Dedicated state for 1MB manual transmission.
-:EMERGENCY: High-priority state triggered by "Mayday" commands.
+- IDLE: Waiting for Pilot authentication.
+- PREFLIGHT: Validated pilot; preparing for taxi/takeoff.
+- ACTIVE: Monitoring live telemetry and traffic.
+- DATA_TRANSFER: Dedicated state for 1MB manual transmission.
+- EMERGENCY: High-priority state triggered by "Mayday" commands.
 
 ## 📦 Data Packet Definition
 - All packets follow the mandatory structure
-- :Header: 4-bit Source/Destination addresses and Packet Type.
-- :Body: Dynamically allocated payload containing telemetry or file fragments.
-- :Tail: 16-bit CRC for error detection and data integrity.
+- Header: 4-bit Source/Destination addresses and Packet Type.
+- Body: Dynamically allocated payload containing telemetry or file fragments.
+- Tail: 16-bit CRC for error detection and data integrity.
