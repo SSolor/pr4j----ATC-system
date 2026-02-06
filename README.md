@@ -26,7 +26,7 @@ The Flight Tower operates through the following transitions
 :DATA_TRANSFER: Dedicated state for 1MB manual transmission.
 :EMERGENCY: High-priority state triggered by "Mayday" commands.
 
-##📦 Data Packet Definition
+## 📦 Data Packet Definition
 - All packets follow the mandatory structure
 - :Header: 4-bit Source/Destination addresses and Packet Type.
 - :Body: Dynamically allocated payload containing telemetry or file fragments.
