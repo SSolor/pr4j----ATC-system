@@ -17,7 +17,7 @@ We employ an Agile-SCRUM methodology with two-week sprints.
 - Parallel Development: Simultaneous work on Client and Server components.
 - Quality Gate: Strict GitHub Pull Request (PR) rules requiring peer review for all merges to ensure code coverage and data integrity.
 - TDD: Targeting 75%-80% code coverage to ensure all functional requirements are verified.
--
+
 ## 🚦Server State Machine
 The Flight Tower operates through the following transitions
 - IDLE: Waiting for Pilot authentication.
