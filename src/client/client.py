@@ -22,17 +22,18 @@ class ClientApp:
     def __init__(self, root):
         self.root = root
         self.root.title("TCP Client")
-        self.root.geometry("300x400")
+        self.root.geometry("400x600")
         
         # Server configuration
         self.server_ip = "127.0.0.1"
         self.server_port = 8888
         
         # UI startup
-        self.init_login_page() 
+        #self.init_login_page() 
 
-        #for testing purposes only, directly go to main page
-        #self.init_main_page()
+        # UI TESTING, 
+        ## Directly go to main page
+        self.init_main_page("Ryan")
         
     
     def send_message(self):
@@ -86,7 +87,7 @@ class ClientApp:
 
         if username == "admin" and password == "password":
             messagebox.showinfo("Login Successful", "Welcome, admin!")
-            self.init_main_page()
+            self.init_main_page(username)
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")
     
@@ -94,22 +95,57 @@ class ClientApp:
     ################################
     ## GUI elements for main page ##
     ################################
-    def init_main_page(self):
+    def init_main_page(self, username):
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        label = tk.Label(self.root, text="Click to send message to server", font=("Arial", 12))
-        label.pack(pady=20)
+        label = tk.Label(self.root, text="Welcome to ATC System " + username, font=("Arial", 12))
+        label.pack(pady=10)
         
-        self.button = tk.Button(self.root, text="Click", command=self.send_message, 
+        ### PRE_FLIGHT ###
+        ## Flight Plan
+        self.button = tk.Button(self.root, text="Flight Plan", command=self.send_message, 
                                 font=("Arial", 14), bg="#4CAF50", fg="white", 
-                                width=10, height=2)
-        self.button.pack(pady=10)
-        
-        self.response_label = tk.Label(self.root, text="", font=("Arial", 10), fg="blue")
-        self.response_label.pack(pady=10)
+                                width=30, height=2)
+        self.button.pack(pady=5)
+        ## Weather Report
+        self.button = tk.Button(self.root, text="Weather Report", command=self.send_message, 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+        ## Taxi Request
+        self.button = tk.Button(self.root, text="Request Taxi", command=self.send_message, 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
 
-        #logout button
+
+        ### DATA_TRANSFER ###
+        ## Flight Manual
+        self.button = tk.Button(self.root, text="Request Flight Manual", command=self.send_message, 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+
+        ### ACTIVE_AIRSPACE ###
+        ## Runway Clearance Request
+        self.button = tk.Button(self.root, text="Request Runway Clearance", command=self.send_message, 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+
+        ## Telemetry data & Air-Traffic data
+        self.button = tk.Button(self.root, text="Request Aircraft Status", command=self.send_message, ## Telemetry data & Air-Traffic data (may be 2 buttons later on)
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+
+        ### Server response ###
+        self.response_label = tk.Label(self.root, text="", font=("Arial", 10), fg="blue") ## Should probably be a popup instead of a label, but for testing purposes this is fine
+        self.response_label.pack(pady=5)
+
+
+        ### Logout button ###
         logout_button = tk.Button(self.root, text="Logout", command=self.init_login_page, 
                     font=("Arial", 12), bg="#f44336", fg="white", width=10, height=1)
         logout_button.pack(pady=10)
