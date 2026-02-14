@@ -50,7 +50,7 @@ class ClientApp:
         
         if result > 0:
             response = response_buffer.value.decode('utf-8')
-            self.response_label.config(text=f"Server says: {response}")
+            messagebox.showinfo("Server Response", response) ## Display server response in a message box (Temp)
         elif result == -1:
             messagebox.showerror("Error", "Failed to create socket")
         elif result == -2:
@@ -140,10 +140,12 @@ class ClientApp:
                                 width=30, height=2)
         self.button.pack(pady=5)
 
-        ### Server response ###
-        self.response_label = tk.Label(self.root, text="", font=("Arial", 10), fg="blue") ## Should probably be a popup instead of a label, but for testing purposes this is fine
-        self.response_label.pack(pady=5)
-
+        ### EMERGENCY ###
+        ## Emergency notification
+        self.button = tk.Button(self.root, text="EMERGENCY", command=self.send_message,
+                                font=("Arial", 14), bg="#f44336", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
 
         ### Logout button ###
         logout_button = tk.Button(self.root, text="Logout", command=self.init_login_page, 
