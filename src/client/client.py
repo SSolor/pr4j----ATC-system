@@ -33,7 +33,7 @@ class ClientApp:
 
         # UI TESTING, 
         ## Directly go to main page
-        self.init_main_page("Ryan")
+        self.init_main_page_PRE_FLIGHT("Ryan")
         
     
     def send_message(self):
@@ -87,15 +87,15 @@ class ClientApp:
 
         if username == "admin" and password == "password":
             messagebox.showinfo("Login Successful", "Welcome, admin!")
-            self.init_main_page(username)
+            self.init_main_page_PRE_FLIGHT(username)
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")
     
 
-    ################################
-    ## GUI elements for main page ##
-    ################################
-    def init_main_page(self, username):
+    ##############################################
+    ## GUI elements for main page -- PRE_FLIGHT ##
+    ##############################################
+    def init_main_page_PRE_FLIGHT(self, username):
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -114,9 +114,9 @@ class ClientApp:
                                 width=30, height=2)
         self.button.pack(pady=5)
         ## Taxi Request
-        self.button = tk.Button(self.root, text="Request Taxi", command=self.send_message, 
-                                font=("Arial", 14), bg="#4CAF50", fg="white", 
-                                width=30, height=2)
+        self.button = tk.Button(self.root, text="Request Taxi", command=lambda: self.init_main_page_ACTIVE_AIRSPACE(username), 
+                    font=("Arial", 14), bg="#4CAF50", fg="white", 
+                    width=30, height=2)
         self.button.pack(pady=5)
 
 
@@ -127,18 +127,6 @@ class ClientApp:
                                 width=30, height=2)
         self.button.pack(pady=5)
 
-        ### ACTIVE_AIRSPACE ###
-        ## Runway Clearance Request
-        self.button = tk.Button(self.root, text="Request Runway Clearance", command=self.send_message, 
-                                font=("Arial", 14), bg="#4CAF50", fg="white", 
-                                width=30, height=2)
-        self.button.pack(pady=5)
-
-        ## Telemetry data & Air-Traffic data
-        self.button = tk.Button(self.root, text="Request Aircraft Status", command=self.send_message, ## Telemetry data & Air-Traffic data (may be 2 buttons later on)
-                                font=("Arial", 14), bg="#4CAF50", fg="white", 
-                                width=30, height=2)
-        self.button.pack(pady=5)
 
         ### EMERGENCY ###
         ## Emergency notification
@@ -154,12 +142,53 @@ class ClientApp:
 
 
 
- 
+    ###################################################
+    ## GUI elements for main page -- ACTIVE_AIRSPACE ##
+    ###################################################
+    def init_main_page_ACTIVE_AIRSPACE(self, username):
+        for widget in self.root.winfo_children():
+            widget.destroy()
 
-  
+        label = tk.Label(self.root, text="Welcome to ATC System " + username, font=("Arial", 12))
+        label.pack(pady=10)
+
+        ### ACTIVE_AIRSPACE specific buttons ###
+        ## Telemetry data 
+        self.button = tk.Button(self.root, text="Telemetry Update", command=self.send_message, 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+
+        ## Air-Traffic data
+        self.button = tk.Button(self.root, text="Air-Traffic Update", command=self.send_message, 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+
+        ## Runway Clearance Request
+        self.button = tk.Button(self.root, text="Clear Runway", command=lambda: self.init_main_page_PRE_FLIGHT(username), 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+        
+        ### Global Buttons ###
+        ## Flight Manual
+        self.button = tk.Button(self.root, text="Request Flight Manual", command=self.send_message, 
+                                font=("Arial", 14), bg="#4CAF50", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+
+        ## Emergency notification
+        self.button = tk.Button(self.root, text="EMERGENCY", command=self.send_message,
+                                font=("Arial", 14), bg="#f44336", fg="white", 
+                                width=30, height=2)
+        self.button.pack(pady=5)
+
+        ### Functions ###
 
 
-    
+
+    # Cleanup Winsock on closing the application
     def on_closing(self):
         socket_lib.cleanup_winsock()
         self.root.destroy()
