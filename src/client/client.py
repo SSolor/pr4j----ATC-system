@@ -35,7 +35,7 @@ class ClientApp:
         ## Directly go to main page
         self.init_main_page_PRE_FLIGHT("Ryan")
         
-    
+    ### Message Logic Functions ###
     def send_message(self):
         # Prepare buffer for response
         response_buffer = ctypes.create_string_buffer(1024)
@@ -50,15 +50,45 @@ class ClientApp:
         
         if result > 0:
             response = response_buffer.value.decode('utf-8')
-            messagebox.showinfo("Server Response", response) ## Display server response in a message box (Temp)
-        elif result == -1:
-            messagebox.showerror("Error", "Failed to create socket")
-        elif result == -2:
-            messagebox.showerror("Error", "Failed to connect to server")
-        elif result == -3:
-            messagebox.showerror("Error", "Failed to send message")
-        elif result == -4:
-            messagebox.showerror("Error", "Failed to receive response")
+            if hasattr(self, 'response_text'):
+                self.display_server_response(response)
+            else:
+                messagebox.showinfo("Server Response", response)
+        else:
+            # Map error codes to messages
+            if result == -1:
+                err = "Failed to create socket"
+            elif result == -2:
+                err = "Failed to connect to server"
+            elif result == -3:
+                err = "Failed to send message"
+            elif result == -4:
+                err = "Failed to receive response"
+            else:
+                err = f"Unknown error (code={result})"
+
+            # Display error in the response area if available
+            if hasattr(self, 'response_text'):
+                self.display_server_response(f"ERROR: {err}")
+ 
+    def create_response_area(self):
+        # Create a small, read-only text area to show server responses
+        self.response_frame = tk.Frame(self.root)
+        self.response_frame.pack(fill='x', padx=10, pady=(0,5))
+        self.response_text = tk.Text(self.response_frame, height=4, wrap='word', font=("Arial", 10))
+        self.response_text.pack(fill='x')
+        self.response_text.configure(state='disabled')
+
+    def display_server_response(self, text):
+        try:
+            self.response_text.configure(state='normal')
+            self.response_text.delete('1.0', tk.END)
+            self.response_text.insert(tk.END, text)
+            self.response_text.configure(state='disabled')
+        except Exception:
+            # Fallback to messagebox if widget not available for some reason
+            messagebox.showinfo("Server Response", text)
+
     
     #################################
     ## GUI elements for login page ##
@@ -101,6 +131,8 @@ class ClientApp:
 
         label = tk.Label(self.root, text="Welcome to ATC System " + username, font=("Arial", 12))
         label.pack(pady=10)
+        # Server response area (appears under the welcome message)
+        self.create_response_area()
         
         ### PRE_FLIGHT ###
         ## Flight Plan
@@ -151,6 +183,8 @@ class ClientApp:
 
         label = tk.Label(self.root, text="Welcome to ATC System " + username, font=("Arial", 12))
         label.pack(pady=10)
+        # Server response area (appears under the welcome message)
+        self.create_response_area()
 
         ### ACTIVE_AIRSPACE specific buttons ###
         ## Telemetry data 
@@ -184,7 +218,8 @@ class ClientApp:
                                 width=30, height=2)
         self.button.pack(pady=5)
 
-        ### Functions ###
+
+    ### Functions ###
 
 
 
