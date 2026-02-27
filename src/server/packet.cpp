@@ -3,13 +3,22 @@
 
 #include <memory>
 
-class packet{
+class packet {
+
+
+
 private:
-    const int EmptySize=6;
+    const int EmptySize = 6;
     //WE NEED TO AGREE ON THIS ONE IDK
-    const int MaxSize = 200; 
-    
-    struct header{
+    const int MaxSize = 200;
+
+    const int pkt_empty = 0x0;
+    const int pkt_req = 0x1;
+    const int pkt_dat = 0x2;
+    const int pkt_auth = 0x3;
+    const int pkt_emgcy = 0x4;
+
+    struct header {
         char transmit_flag : 1;
         char packet_type : 3;
         char client_id : 4;
@@ -21,10 +30,10 @@ private:
         //well tell me if I should change it Iguess
         unsigned char payload_length;
     }HEAD;
-    
+
     char* data;
     char* txbuff;
-    
+
     int CRC;
 
 public:
@@ -57,18 +66,19 @@ public:
     int PopulPacket(char* datsrc, int size, char id, char type) {
         int consumed;
 
+
         if (data) {
             delete[] data;
         }
 
         if (size >= MaxSize) {
             consumed = MaxSize;
-            HEAD.transmit_flag = 0x1; 
-                //is it appropriate to modify that here? I think so
+            HEAD.transmit_flag = 0x1;
+            //is it appropriate to modify that here? I think so
         }
         else
             consumed = size;
-        
+
         //assigning data
         data = new char[consumed];
         memcpy(data, datsrc, consumed);
@@ -82,12 +92,12 @@ public:
         return consumed;
     }
 
-    
+
     char* Serialize(int* finalsize) {
         if (txbuff) {
             delete[] txbuff;
         }
-        
+
         unsigned int fullsize = EmptySize + HEAD.payload_length;
         //not sure about it being unsigned here but whater. (should I make it size_t lmao)
 
@@ -118,8 +128,17 @@ public:
         *crc = CRC;
     }
 
+
+
+
     //should I include logic for parsing flags & etc. and taking action and whatever here? i'm not sure if that feels right
     //anyways, we should probably have the definitions here at least? we'll have to decide on something I think
 
     //also, the actual sending and recieving wouldn't be done here, right? 
 };
+
+
+//okay
+//lets say you're the weather man nad have to send a packet
+//what do you do?
+//
