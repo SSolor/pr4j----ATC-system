@@ -13,7 +13,7 @@ ServerEngine::~ServerEngine() {
 bool ServerEngine::start(unsigned short port) {
     listenSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (listenSock == INVALID_SOCKET) {
-        std::cout << "socket() failed\n";
+        std::cout << "socket() failed" << std::endl;
         return false;
     }
 
@@ -30,14 +30,14 @@ bool ServerEngine::start(unsigned short port) {
     }
 
     if (listen(listenSock, SOMAXCONN) == SOCKET_ERROR) {
-        std::cout << "listen() failed\n";
+        std::cout << "listen() failed" << std::endl;
         closesocket(listenSock);
         listenSock = INVALID_SOCKET;
         return false;
     }
 
     running = true;
-    std::cout << "Server listening on port " << port << "\n";
+    std::cout << "Server listening on port " << port << std::endl;
     return true;
 }
 
@@ -48,16 +48,16 @@ void ServerEngine::run() {
 
         SOCKET clientSock = accept(listenSock, (sockaddr*)&clientAddr, &len);
         if (clientSock == INVALID_SOCKET) {
-            if (running) std::cout << "accept() failed\n";
+            if (running) std::cout << "accept() failed" << std::endl;
             continue;
         }
 
-        std::cout << "Client connected!\n";
+        std::cout << "Client connected!" << std::endl;
 
         handleClient(clientSock);
 
         closesocket(clientSock);
-        std::cout << "Client disconnected.\n";
+        std::cout << "Client disconnected." << std::endl;
     }
 }
 
@@ -80,8 +80,8 @@ void ServerEngine::handleClient(SOCKET clientSock) {
 
         if (type == Packet::WEATHER_REQUEST) {
             std::string location = req.getBodyAsString();
-            std::cout << "WEATHER_REQUEST: " << location << "\n";
-            std::cout << "Client ID: " << req.getHeader().clientID << "\n"; 
+            std::cout << "WEATHER_REQUEST: " << location << std::endl;
+            std::cout << "Client ID: " << req.getHeader().clientID << std::endl; 
 
             // Get weather from file (or placeholder for now)
             std::string weather = WeatherService::getWeather(location);

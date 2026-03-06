@@ -2,62 +2,41 @@
 #include <winsock2.h>
 #include <iostream>
 #include <string>
-#include <cstdlib>
 
 #pragma comment(lib, "ws2_32.lib")
 
-int main(int argc, char* argv[]) {
+int main() {
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+        std::cout << "WSAStartup failed\n";
+        return 1;
+    }
+
+    // Fixed connection settings (no command args)
     std::string ip = "127.0.0.1";
     unsigned short port = 54000;
 
-    if (argc >= 2) ip = argv[1];
-    if (argc >= 3) {
-        int p = std::atoi(argv[2]);
-        if (p > 0 && p <= 65535) port = (unsigned short)p;
-    }
+    // Read location from stdin (sent by Python GUI)
+    std::string location;
+    std::getline(std::cin, location);
 
-    WSADATA wsa;
-    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
-        std::cout << "WSAStartup failed\n";
+    if (location.empty()) {
+        std::cout << "No location provided\n";
+        WSACleanup();
         return 1;
     }
 
     ClientEngine client;
     if (!client.connectToServer(ip, port)) {
-        std::cout << "CONNECT_FAILED\n";
+        std::cout << "connect() failed\n";
         WSACleanup();
         return 1;
     }
 
-    std::cout << "CONNECTED\n";
-    std::cout.flush();
+    std::cout << "Connected to server!\n";
 
-    // Expected input:
-    // WEATHER <location>
-    std::string cmd;
-    while (std::cin >> cmd) {
-
-        if (cmd == "QUIT") {
-            std::cout << "BYE\n";
-            std::cout.flush();
-            break;
-        }
-
-        if (cmd == "WEATHER") {
-            std::string location;
-            std::cin >> location;
-
-            std::string result = client.requestWeather(location);
-            std::cout << "WEATHER_RESPONSE " << result << "\n";
-            std::cout.flush();
-            continue;
-        }
-
-        std::string rest;
-        std::getline(std::cin, rest);
-        std::cout << "ERROR Unknown command\n";
-        std::cout.flush();
-    }
+    std::string result = client.requestWeather(location);
+    std::cout << result << "\n";
 
     client.disconnect();
     WSACleanup();
