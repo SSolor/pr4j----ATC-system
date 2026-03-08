@@ -1,0 +1,12 @@
+Location,TemperatureC,WindKPH,Condition,VisibilityKM
+
+WATERLOO,12,18,Cloudy,10
+TORONTO,15,22,Sunny,15
+OTTAWA,8,12,Rain,6
+MONTREAL,10,20,Partly Cloudy,12
+VANCOUVER,14,10,Drizzle,9
+CALGARY,5,30,Windy,20
+HALIFAX,9,16,Fog,4
+EDMONTON,3,25,Snow,8
+WINNIPEG,2,28,Blizzard,2
+QUEBEC_CITY,7,14,Clear,18
