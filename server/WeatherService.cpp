@@ -10,7 +10,6 @@ std::string WeatherService::getWeather(const std::string& location) {
 
     std::string line;
     while (std::getline(in, line)) {
-        // Super simple match for tonight
         if (line.find(location) != std::string::npos) {
             return line; // return whole matching line
         }

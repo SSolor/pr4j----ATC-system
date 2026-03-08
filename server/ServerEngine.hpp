@@ -7,7 +7,7 @@ public:
     ~ServerEngine();
 
     bool start(unsigned short port);
-    void run();               // accept loop
+    void run();               
     void stop();
 
 private:

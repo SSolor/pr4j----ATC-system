@@ -81,9 +81,8 @@ void ServerEngine::handleClient(SOCKET clientSock) {
         if (type == Packet::WEATHER_REQUEST) {
             std::string location = req.getBodyAsString();
             std::cout << "WEATHER_REQUEST: " << location << std::endl;
-            std::cout << "Client ID: " << req.getHeader().clientID << std::endl; 
+            std::cout << "Client ID: " << req.getHeader().clientID << std::endl;
 
-            // Get weather from file (or placeholder for now)
             std::string weather = WeatherService::getWeather(location);
 
             Packet resp(Packet::WEATHER_RESPONSE,
