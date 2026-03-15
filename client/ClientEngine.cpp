@@ -4,8 +4,8 @@
  */
 
 #include "ClientEngine.hpp"
-#include "../shared/PacketTransport.hpp"
-#include "../shared/Packet.hpp"
+//#include "../shared/PacketTransport.hpp"
+#include "../shared/Packet.h"
 #include <iostream>
 #include <vector>
 
@@ -75,24 +75,45 @@ void ClientEngine::disconnect() {
  */
 
 std::string ClientEngine::requestWeather(const std::string& location) {
-    std::vector<char> body(location.begin(), location.end());
+    
+    // Create packet body (e.g., location string)
+    packet req;
 
-    Packet req(Packet::WEATHER_REQUEST, clientID, body);
-    if (!PacketTransport::sendPacket((int)sock, req)) {
+    int bodySize = req.PopulPacket(
+        (char*)location.data(), 
+        (int)location.size(), 
+        (char)clientID, 
+        pkt_req     // PKTYPE defines any Request packet as pkt_req
+    );
+
+    // Serialize and Send request packet
+    int serializedSize;
+    char* serializedReq = req.Serialize(&serializedSize);
+
+    int bytesSent = send(sock, serializedReq, serializedSize, 0);
+    if (bytesSent == SOCKET_ERROR) {
+        //std::cout << "Failed to send packet\n";
         return "Failed to send WEATHER_REQUEST";
     }
 
-    Packet resp;
-    if (!PacketTransport::receivePacket((int)sock, resp)) {
+    // Receive response packet
+    char buffer[MAX_PKTSIZE];
+    int received = recv(sock, buffer, sizeof(buffer), MSG_WAITALL);
+    if (received == SOCKET_ERROR || received == 0) { 
+        //std::cout << "Failed to receive packet\n";
         return "Failed to receive response";
     }
 
-    if (resp.getHeader().type == Packet::WEATHER_RESPONSE) {
-        return resp.getBodyAsString();
+    // Deserialize response packet
+    packet resp(buffer); 
+    
+    //read header to determine if response is valid and what type it is
+    if (resp.getTFlag() == PKT_TRNSMT_INCOMP) {
+        //std::cout << "Received incomplete packet\n";
+        return "Received incomplete response";
     }
-
-    if (resp.getHeader().type == Packet::ERROR_MSG) {
-        return "Server error: " + resp.getBodyAsString();
+    if (resp.getPKType() == pkt_dat) { 
+        return std::string(resp.getData()); 
     }
 
     return "Unexpected response type";

@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
             std::cin >> location;
 
             std::string result = client.requestWeather(location);
-            std::cout << "WEATHER_RESPONSE " << result << "\n";
+            std::cout << "WEATHER_RESPONSE: " << result << "\n";
             std::cout.flush();
             continue;
         }
