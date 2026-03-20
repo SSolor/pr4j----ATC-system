@@ -1,9 +1,9 @@
 /**
- * @file ClientEngine.cpp
+ * @file "ClientEngine.cpp"
  * @brief Implementation of the ClientEngine class for handling server connectivity and weather requests.
  */
 
-#include "ClientEngine.hpp"
+#include "../client/ClientEngine.hpp"
 #include "../shared/PacketTransport.hpp"
 #include "../shared/Packet.hpp"
 #include <iostream>
