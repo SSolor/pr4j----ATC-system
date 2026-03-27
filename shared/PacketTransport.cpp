@@ -1,56 +1,47 @@
 #include "PacketTransport.hpp"
 #include <winsock2.h>
-#include <vector>
-#include <cstring>   
+#include <cstring>
 
-bool PacketTransport::sendPacket(int sock, const Packet& packet)
+bool PacketTransport::sendPacket(int sock, packet& pak)
 {
-    std::vector<char> bytes = packet.serialize();
+    int size = 0;
+    char* buffer = pak.Serialize(&size);
 
-    // send full packet buffer
-    return sendAll(sock, bytes.data(), (int)bytes.size());
+    if (buffer == nullptr || size <= 0) {
+        return false;
+    }
+
+    return sendAll(sock, buffer, size);
 }
 
-bool PacketTransport::receivePacket(int sock, Packet& outPacket)
+bool PacketTransport::receivePacket(int sock, packet& outpak)
 {
-    // Read header first
-    Packet::Header header;
-    if (!recvAll(sock, (char*)&header, (int)sizeof(Packet::Header)))
-        return false;
+    const int HEADER_SIZE = 2;
 
-    // Basic validation early
-    if (header.magic != 0x12345678)
-        return false;
+    char headerBuff[HEADER_SIZE];
 
-    // Create full buffer: [Header][Body][Tail]
-    int totalSize = (int)sizeof(Packet::Header)
-                  + (int)header.payloadSize
-                  + (int)sizeof(Packet::Tail);
-
-    std::vector<char> fullBuffer;
-    fullBuffer.resize(totalSize);
-
-    // Copy header into fullBuffer
-    int offset = 0;
-    memcpy(fullBuffer.data() + offset, &header, sizeof(Packet::Header));
-    offset += (int)sizeof(Packet::Header);
-
-    // Read body + tail 
-    int remaining = (int)header.payloadSize + (int)sizeof(Packet::Tail);
-
-    if (remaining > 0) {
-        if (!recvAll(sock, fullBuffer.data() + offset, remaining))
-            return false;
-    }
-
-    // Deserialize to Packet
-    try {
-        outPacket = Packet::deserialize(fullBuffer);
-    }
-    catch (...) {
+    if (!recvAll(sock, headerBuff, HEADER_SIZE)) {
         return false;
     }
 
+    unsigned char payloadLength = (unsigned char)headerBuff[1];
+    int totalSize = HEADER_SIZE + payloadLength + sizeof(int); // CRC is 4 bytes
+
+    char* fullBuffer = new char[totalSize];
+
+    memcpy(fullBuffer, headerBuff, HEADER_SIZE);
+
+    int remaining = totalSize - HEADER_SIZE;
+
+    if (!recvAll(sock, fullBuffer + HEADER_SIZE, remaining)) {
+        delete[] fullBuffer;
+        return false;
+    }
+
+    packet temp(fullBuffer);
+    outpak = temp;
+
+    delete[] fullBuffer;
     return true;
 }
 
@@ -60,7 +51,11 @@ bool PacketTransport::sendAll(int sock, const char* data, int size)
 
     while (totalSent < size) {
         int sent = send(sock, data + totalSent, size - totalSent, 0);
-        if (sent <= 0) return false;
+
+        if (sent <= 0) {
+            return false;
+        }
+
         totalSent += sent;
     }
 
@@ -71,17 +66,10 @@ bool PacketTransport::recvAll(int sock, char* buffer, int size)
 {
     int totalReceived = 0;
 
-    while (totalReceived < size)
-    {
+    while (totalReceived < size) {
         int received = recv(sock, buffer + totalReceived, size - totalReceived, 0);
 
-        if (received == 0) {
-            // connection closed cleanly
-            return false;
-        }
-
-        if (received < 0) {
-            // actual socket error
+        if (received <= 0) {
             return false;
         }
 

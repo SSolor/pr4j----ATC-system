@@ -31,3 +31,27 @@ The Flight Tower operates through the following transitions
 - Header: 4-bit Source/Destination addresses and Packet Type.
 - Body: Dynamically allocated payload containing telemetry or file fragments.
 - Tail: 16-bit CRC for error detection and data integrity.
+
+## Running the solution
+Requires gcc to compile
+
+### Compile Executables
+```
+g++ server/main.cpp server/ServerEngine.cpp server/WeatherService.cpp shared/Packet.h shared/PacketTransport.cpp -o build/server.exe -lws2_32
+
+g++ client/main.cpp client/ClientEngine.cpp shared/PacketTransport.cpp shared/Packet.h -o build/client.exe -lws2_32                                                
+```
+> **Note:** You will get the warning `warning: #pragma once in main file` Please test to see if the solution runs after you get this warning. 
+### Running solution
+Navigate to `\pr4j----ATC-system\build\` in 2 terminals
+
+#### Terminal 1 (Server)
+```
+.\server
+```
+#### Terminal 2 (Client)
+```
+.\client
+```
+
+---

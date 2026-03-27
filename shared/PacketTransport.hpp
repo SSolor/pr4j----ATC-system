@@ -1,18 +1,18 @@
 #pragma once
-#include "Packet.hpp"
+#include "packet.h"
 
 class PacketTransport {
 public:
-    // Sends one full Packet over TCP
-    static bool sendPacket(int sock, const Packet& packet);
+    // sends one fully serialized packet over TCP
+    static bool sendPacket(int sock, packet& pak);
 
-    // Receives one full Packet over TCP
-    static bool receivePacket(int sock, Packet& outPacket);
+    // receives one full packet over TCP and rebuilds it
+    static bool receivePacket(int sock, packet& outpak);
 
 private:
-    // Ensures ALL bytes are sent
+    // makes sure all bytes are sent
     static bool sendAll(int sock, const char* data, int size);
 
-    // Ensures EXACTLY size bytes are received
+    // makes sure exactly size bytes are received
     static bool recvAll(int sock, char* buffer, int size);
 };

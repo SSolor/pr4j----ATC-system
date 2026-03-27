@@ -7,9 +7,10 @@
 
 #include "ServerEngine.hpp"
 #include "../shared/PacketTransport.hpp"
-#include "../shared/Packet.hpp"
+#include "../shared/packet.h"
 #include "WeatherService.hpp"
 #include <iostream>
+#include <string>
 
 /**
  * @brief Default constructor.
@@ -80,7 +81,9 @@ void ServerEngine::run() {
         // Blocks until a client connects
         SOCKET clientSock = accept(listenSock, (sockaddr*)&clientAddr, &len);
         if (clientSock == INVALID_SOCKET) {
-            if (running) std::cout << "accept() failed\n";
+            if (running) {
+                std::cout << "accept() failed\n";
+            }
             continue;
         }
 
@@ -99,6 +102,7 @@ void ServerEngine::run() {
  */
 void ServerEngine::stop() {
     running = false;
+
     if (listenSock != INVALID_SOCKET) {
         closesocket(listenSock);
         listenSock = INVALID_SOCKET;
@@ -116,33 +120,50 @@ void ServerEngine::stop() {
  */
 void ServerEngine::handleClient(SOCKET clientSock) {
     while (true) {
-        Packet req;
+        packet req;
+
         if (!PacketTransport::receivePacket((int)clientSock, req)) {
             break;
         }
 
-        unsigned int type = req.getHeader().type;
+        unsigned char type = req.getPKType();
+        unsigned char clientID = req.getCLID();
 
-        if (type == Packet::WEATHER_REQUEST) {
-            std::string location = req.getBodyAsString();
-            std::cout << "WEATHER_REQUEST: " << location << "\n";
-            std::cout << "Client ID: " << req.getHeader().clientID << "\n"; 
+        if (type == pkt_req) {
+            std::string location(req.getData(), req.getPloadLength());
 
-            // Get weather from file (or placeholder for now)
+            std::cout << "REQUEST RECEIVED: " << location << "\n";
+            std::cout << "Client ID: " << (int)clientID << "\n";
+
             std::string weather = WeatherService::getWeather(location);
 
-            Packet resp(Packet::WEATHER_RESPONSE,
-                        req.getHeader().clientID,
-                        std::vector<char>(weather.begin(), weather.end()));
+            packet resp;
+            resp.PopulPacket((char*)weather.c_str(), (int)weather.size(), clientID, pkt_dat);
 
-            PacketTransport::sendPacket((int)clientSock, resp);
+            std::cout << "DATA: ";
+            std::cout.write(resp.getData(), resp.getPloadLength());
+            std::cout << std::endl;
+
+            // just for me to debug
+            std::cout << "CRC: " << resp.calcCRC() << std::endl;
+            std::cout << "TYPE: " << (int)resp.getPKType() << std::endl;
+            std::cout << "FLAG: " << (int)resp.getTFlag() << std::endl;
+            std::cout << "CLIENT ID: " << (int)resp.getCLID() << std::endl;
+            std::cout << "LENGTH: " << (int)resp.getPloadLength() << std::endl;
+
+            if (!PacketTransport::sendPacket((int)clientSock, resp)) {
+                break;
+            }
         }
         else {
             std::string msg = "Unknown request type";
-            Packet err(Packet::ERROR_MSG,
-                       req.getHeader().clientID,
-                       std::vector<char>(msg.begin(), msg.end()));
-            PacketTransport::sendPacket((int)clientSock, err);
+
+            packet err;
+            err.PopulPacket((char*)msg.c_str(), (int)msg.size(), clientID, pkt_empty);
+
+            if (!PacketTransport::sendPacket((int)clientSock, err)) {
+                break;
+            }
         }
     }
 }

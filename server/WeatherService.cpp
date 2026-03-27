@@ -1,19 +1,32 @@
 #include "WeatherService.hpp"
 #include <fstream>
 #include <string>
+#include <sstream>
 
 std::string WeatherService::getWeather(const std::string& location) {
-    std::ifstream in("../data/Weather.csv");
+    std::ifstream in("../data/weather.csv");
+
     if (!in.is_open()) {
-        return "Weather.csv not found";
+        return "weather.csv not found";
     }
 
     std::string line;
+
+    // skip header line
+    std::getline(in, line);
+
     while (std::getline(in, line)) {
-        // Super simple match for tonight
-        if (line.find(location) != std::string::npos) {
-            return line; // return whole matching line
+        std::stringstream ss(line);
+
+        std::string airportID;
+        std::string conditions;
+
+        if (std::getline(ss, airportID, ',') && std::getline(ss, conditions)) {
+            if (airportID == location) {
+                return airportID + ": " + conditions;
+            }
         }
     }
+
     return "No weather found for: " + location;
 }
