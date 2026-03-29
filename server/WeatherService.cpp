@@ -3,8 +3,15 @@
 #include <string>
 #include <sstream>
 
+static std::ifstream openDataFile(const std::string& fileName) {
+    std::ifstream in("../data/" + fileName);
+    if (in.is_open()) return in;
+    in.open("data/" + fileName);
+    return in;
+}
+
 std::string WeatherService::getWeather(const std::string& location) {
-    std::ifstream in("../data/weather.csv");
+    std::ifstream in = openDataFile("weather.csv");
 
     if (!in.is_open()) {
         return "weather.csv not found";

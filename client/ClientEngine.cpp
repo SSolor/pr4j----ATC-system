@@ -125,10 +125,10 @@ std::string ClientEngine::dataRequest(const std::string& data, reqtyp type) {
     return "Unexpected response type";
 }
 
-std::string ClientEngine::authRequest(const std::string&data){
+std::string ClientEngine::pkRequest(const std::string&data, pkTyFl PKType){
     packet txPkt;
     int size = data.size();
-    txPkt.PopulPacket((char*)data.data(),size,(char)clientID,pkt_auth);
+    txPkt.PopulPacket((char*)data.data(),size,(char)clientID,PKType);
 
     // Serialize and Send request packet
     int serialPktSize = 0;
@@ -160,7 +160,7 @@ std::string ClientEngine::authRequest(const std::string&data){
         //std::cout << "Received incomplete packet\n";
         return "Received incomplete response";
     }
-    if (rxPkt.getPKType() == pkt_dat) { 
+    if (rxPkt.getPKType() == PKType) { 
         return std::string(rxPkt.getData(), rxPkt.getPloadLength()); 
     }
 

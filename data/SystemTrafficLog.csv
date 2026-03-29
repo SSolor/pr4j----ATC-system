@@ -1,1 +1,2 @@
-LogID,FlightID,LastLocation_lat,LastLocation_long,ClientStatus,JobDescription,TimeStamp
+LogID,FlightID,LastLocation_lat,LastLocation_long,ClientStatus,JobDescription,TimeStamp1,UNKNOWN,0,0,ACTIVE,NO_TELEMETRY,2026-03-29 11:30:13
+1,UNKNOWN,0,0,ACTIVE,NO_TELEMETRY,2026-03-29 11:42:35

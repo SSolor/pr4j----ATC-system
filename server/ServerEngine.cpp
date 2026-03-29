@@ -3,6 +3,9 @@
 #include "../shared/packet.h"
 #include "../shared/Request.h"
 #include "WeatherService.hpp"
+#include "FileTransferManager.hpp"
+#include "ClientSession.hpp"
+#include "StateMachine.hpp"
 #include <iostream>
 #include <string>
 
@@ -75,6 +78,8 @@ void ServerEngine::stop() {
 }
 
 void ServerEngine::handleClient(SOCKET clientSock) {
+    StateMachine stateMachine;
+
     while (true) {
         packet rxPkt;
 
@@ -99,27 +104,43 @@ void ServerEngine::handleClient(SOCKET clientSock) {
         if (type == pkt_req) {
             Request rxReq(rxPkt.getData(), rxPkt.getPloadLength());
             std::string data;
+            reqtyp reqType = static_cast<reqtyp>(rxReq.getType());
 
-            if(rxReq.getType() == req_weather) {
+            if (!stateMachine.canHandle(reqType)) {
+                data = "Request denied in state: " + stateMachine.getStateName();
+            }
+            else if (reqType == req_weather) {
                 std::string location(rxReq.getBody(), rxReq.getBsize());
 
                 std::cout << "REQUEST RECEIVED: " << location << "\n";
                 std::cout << "Client ID: " << (int)clientID << "\n";
 
                 data = WeatherService::getWeather(location);
+                stateMachine.onRequestHandled(reqType);
             }
-            else if (rxReq.getType() == req_telemetry){ 
-                data = "Telemetry Request: Service currently unavailable\n";
+            else if (reqType == req_telemetry) {
+                std::string telemetry(rxReq.getBody(), rxReq.getBsize());
+                data = FileTransferManager::logTelemetry(telemetry, clientID);
+                stateMachine.onRequestHandled(reqType);
             }
-            else if (rxReq.getType() == req_file){ 
-                data = "Flight Manual Request: Service currently unavailable\n";
+            else if (reqType == req_file) {
+                data = FileTransferManager::getManualInfo();
+                stateMachine.onRequestHandled(reqType);
             }
-            else if (rxReq.getType() == req_taxi){ 
-                data = "Taxi Request Request: Service currently unavailable\n";
+            else if (reqType == req_taxi) {
+                data = FileTransferManager::getTaxiClearance();
+                stateMachine.onRequestHandled(reqType);
             }
-            else if (rxReq.getType() == req_fplan){ 
-                data = "Flight Plan Request: Service currently unavailable\n";
-            } //continue with the above format for each request type
+            else if (reqType == req_fplan) {
+                std::string flightId(rxReq.getBody(), rxReq.getBsize());
+                data = FileTransferManager::getFlightPlan(flightId);
+                stateMachine.onRequestHandled(reqType);
+            }
+            else if (reqType == req_traffic) {
+                std::string flightId(rxReq.getBody(), rxReq.getBsize());
+                data = FileTransferManager::getTraffic(flightId);
+                stateMachine.onRequestHandled(reqType);
+            }
             else {
                 data = "Unknown request type";
             }
@@ -141,8 +162,29 @@ void ServerEngine::handleClient(SOCKET clientSock) {
             if (!PacketTransport::sendPacket((int)clientSock, resp)) {
                 break;
             }
+            continue;
         }
-        else {
+
+        if (type == pkt_auth) {
+            std::string credentials(rxPkt.getData(), rxPkt.getPloadLength());
+            std::cout << "AUTH ATTEMPT: " << credentials << "\n";
+            std::cout << "Client ID: " << (int)clientID << "\n";
+
+            std::string response = ClientSession::authenticate(credentials);
+            if (response.find("Authentication Successful") != std::string::npos) {
+                stateMachine.onAuthSuccess();
+            }
+
+            packet authResp;
+            authResp.PopulPacket((char*)response.c_str(), (int)response.size(), clientID, pkt_auth);
+
+            if (!PacketTransport::sendPacket((int)clientSock, authResp)) {
+                break;
+            }
+            continue;
+        }
+
+        {
             std::string msg = "Unknown packet type";
 
             packet err;

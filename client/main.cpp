@@ -47,6 +47,12 @@ int main(int argc, char* argv[]) {
         }
 
         // EMERGENCY
+        if (cmd == "EMERGENCY") {
+            std::string result = client.pkRequest(input, pkt_emgcy);
+            std::cout << "EMERGENCY_RESPONSE: " << result << "\n";
+            std::cout.flush();
+            continue;
+        }
 
         //AUTH
         if (cmd == "Login"){
@@ -56,9 +62,9 @@ int main(int argc, char* argv[]) {
             std::string Password;
             std::cout << "Please enter Password: ";
             std::cin >> Password;
-            std::string URN = "Login?Username="+Username+"&Password="+Password;
+            std::string info = Username+","+Password;
             
-            std::string result = client.authRequest(URN);
+            std::string result = client.pkRequest(info, pkt_auth);
             std::cout << "LoginAuth: " << result << "\n";
             std::cout.flush();
             continue;
